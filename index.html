@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dota 2 Heroes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 3em;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .search-box {
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-input:focus {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-random {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .btn-random:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-select-all {
+            background: linear-gradient(45deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+
+        .btn-select-all:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(155, 89, 182, 0.4);
+        }
+
+        .btn-clear {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a6f);
+            color: white;
+        }
+
+        .btn-clear:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .selection-count {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.5em;
+            padding: 50px;
+        }
+
+        .heroes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .hero-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .hero-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-color: rgba(78, 205, 196, 0.5);
+        }
+
+        .hero-card.selected {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.6);
+        }
+
+        .hero-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4ecdc4;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .hero-name {
+            padding: 15px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .error {
+            text-align: center;
+            color: #ff6b6b;
+            padding: 50px;
+            font-size: 1.2em;
+        }
+
+        .github-link {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            z-index: 999;
+        }
+
+        .github-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .github-link svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4ecdc4;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Dota 2 Heroes</h1>
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search heroes...">
+        </div>
+        <div class="controls">
+            <div class="selection-count">
+                <span>Selected:</span>
+                <span id="selectedCount">0</span>
+            </div>
+            <button class="btn btn-random" id="randomBtn">Random Hero</button>
+            <button class="btn btn-select-all" id="selectAllBtn">Select All</button>
+            <button class="btn btn-clear" id="clearBtn">Clear Selection</button>
+        </div>
+        <div id="content">
+            <div class="loading">Loading heroes...</div>
+        </div>
+    </div>
+
+    <a href="https://baldosa.github.io/dota2-random-picker" target="_blank" class="github-link" title="Visit GitHub">
+        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+        </svg>
+    </a>
+
+    <script>
+        const contentDiv = document.getElementById('content');
+        const selectedCountEl = document.getElementById('selectedCount');
+        const randomBtn = document.getElementById('randomBtn');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const searchInput = document.getElementById('searchInput');
+
+        const apiUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.dota2.com/datafeed/herolist?language=english');
+        const imageBaseUrl = 'https://cdn.steamstatic.com/apps/dota2/images/dota_react/heroes/';
+
+        let heroes = [];
+        let selectedHeroes = new Set();
+
+        // Load selection from memory (NOT localStorage)
+        let savedSelection = [];
+
+        async function fetchHeroes() {
+            try {
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data && data.result && data.result.data && data.result.data.heroes) {
+                    heroes = data.result.data.heroes;
+
+                    // Restore selection from memory
+                    selectedHeroes = new Set(savedSelection);
+
+                    displayHeroes(heroes);
+                    updateSelectedCount();
+                } else {
+                    throw new Error('Heroes data not found in response');
+                }
+            } catch (error) {
+                contentDiv.innerHTML = `<div class="error">Error loading heroes: ${error.message}<br><br>Please check browser console for details.</div>`;
+                console.error('Error fetching heroes:', error);
+            }
+        }
+
+        function displayHeroes(heroList) {
+            const gridHtml = heroList.map(hero => {
+                const heroName = hero.name.replace('npc_dota_hero_', '');
+                const imageUrl = `${imageBaseUrl}${heroName}.png`;
+                const displayName = hero.name_loc || heroName.replace(/_/g, ' ');
+                const isSelected = selectedHeroes.has(hero.name);
+
+                return `
+                    <div class="hero-card ${isSelected ? 'selected' : ''}" data-hero-name="${hero.name}">
+                        <img src="${imageUrl}" alt="${displayName}" class="hero-image" loading="lazy">
+                        <div class="hero-name">${displayName}</div>
+                    </div>
+                `;
+            }).join('');
+
+            contentDiv.innerHTML = `<div class="heroes-grid">${gridHtml}</div>`;
+
+            // Add click listeners
+            document.querySelectorAll('.hero-card').forEach(card => {
+                card.addEventListener('click', () => toggleHeroSelection(card));
+            });
+        }
+
+        function toggleHeroSelection(card) {
+            const heroName = card.dataset.heroName;
+
+            if (selectedHeroes.has(heroName)) {
+                selectedHeroes.delete(heroName);
+                card.classList.remove('selected');
+            } else {
+                selectedHeroes.add(heroName);
+                card.classList.add('selected');
+            }
+
+            saveSelection();
+            updateSelectedCount();
+        }
+
+        function saveSelection() {
+            savedSelection = Array.from(selectedHeroes);
+        }
+
+        function updateSelectedCount() {
+            selectedCountEl.textContent = selectedHeroes.size;
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+
+        async function randomizeAndCopy() {
+            if (selectedHeroes.size === 0) {
+                showNotification('Please select at least one hero!');
+                return;
+            }
+
+            const selectedArray = Array.from(selectedHeroes);
+            const randomHero = selectedArray[Math.floor(Math.random() * selectedArray.length)];
+            const heroName = randomHero.replace('npc_dota_hero_', '');
+            const command = `dota_pick_hero ${heroName}`;
+
+            try {
+                await navigator.clipboard.writeText(command);
+                showNotification('Copied to clipboard!');
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                showNotification('Failed to copy to clipboard');
+            }
+        }
+
+        function selectAllHeroes() {
+            heroes.forEach(hero => {
+                selectedHeroes.add(hero.name);
+            });
+
+            saveSelection();
+            updateSelectedCount();
+
+            document.querySelectorAll('.hero-card').forEach(card => {
+                card.classList.add('selected');
+            });
+
+            showNotification('All heroes selected!');
+        }
+
+        function clearSelection() {
+            selectedHeroes.clear();
+            saveSelection();
+            updateSelectedCount();
+
+            document.querySelectorAll('.hero-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            showNotification('Selection cleared!');
+        }
+
+        // Event listeners
+        randomBtn.addEventListener('click', randomizeAndCopy);
+        selectAllBtn.addEventListener('click', selectAllHeroes);
+        clearBtn.addEventListener('click', clearSelection);
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredHeroes = heroes.filter(hero => {
+                const heroName = hero.name.replace('npc_dota_hero_', '').toLowerCase();
+                const displayName = hero.name_loc.toLowerCase();
+                return heroName.includes(searchTerm) || displayName.includes(searchTerm);
+            });
+            displayHeroes(filteredHeroes);
+        });
+
+        // Initialize
+        fetchHeroes();
+    </script>
+</body>
+
+</html>
