@@ -176,7 +176,7 @@
 
         .hero-image {
             width: 100%;
-            height: 150px;
+            height: 120px;
             object-fit: cover;
             display: block;
         }
@@ -223,6 +223,131 @@
             width: 32px;
             height: 32px;
             fill: white;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, #2d3561 0%, #1f2847 100%);
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            position: relative;
+        }
+
+        .modal h2 {
+            margin: 0 0 25px 0;
+            font-size: 2em;
+            color: #4ecdc4;
+            text-align: center;
+        }
+
+        .modal-content {
+            color: #fff;
+            line-height: 1.8;
+        }
+
+        .modal-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .modal-content li {
+            padding: 12px 0;
+            font-size: 1.1em;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .modal-content li:before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #4ecdc4;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .modal-content a {
+            color: #4ecdc4;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .modal-content a:hover {
+            color: #44a08d;
+            text-decoration: underline;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 2em;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .btn-help {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            background: rgba(78, 205, 196, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(78, 205, 196, 0.4);
+            z-index: 999;
+            cursor: pointer;
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .btn-help:hover {
+            background: rgba(78, 205, 196, 0.3);
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
         }
 
         .notification {
@@ -273,6 +398,24 @@
         </div>
     </div>
 
+    <div class="modal-overlay hidden" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" id="modalClose">×</button>
+            <h2>How to Use</h2>
+            <div class="modal-content">
+                <ul>
+                    <li>Activate Dota 2 console → <a href="https://liquipedia.net/dota2/Console"
+                            target="_blank">Liquidpedia article</a></li>
+                    <li>Pick the heroes that you want to add to the randomizer</li>
+                    <li>Click random</li>
+                    <li>When on pick phase, open the console, paste and enter</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-help" id="helpBtn" title="How to use">?</button>
+
     <a href="https://baldosa.github.io/dota2-random-picker" target="_blank" class="github-link" title="Visit GitHub">
         <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -287,6 +430,9 @@
         const selectAllBtn = document.getElementById('selectAllBtn');
         const clearBtn = document.getElementById('clearBtn');
         const searchInput = document.getElementById('searchInput');
+        const helpBtn = document.getElementById('helpBtn');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
 
         const apiUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.dota2.com/datafeed/herolist?language=english');
         const imageBaseUrl = 'https://cdn.steamstatic.com/apps/dota2/images/dota_react/heroes/';
@@ -432,6 +578,20 @@
         randomBtn.addEventListener('click', randomizeAndCopy);
         selectAllBtn.addEventListener('click', selectAllHeroes);
         clearBtn.addEventListener('click', clearSelection);
+
+        helpBtn.addEventListener('click', () => {
+            modalOverlay.classList.remove('hidden');
+        });
+
+        modalClose.addEventListener('click', () => {
+            modalOverlay.classList.add('hidden');
+        });
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                modalOverlay.classList.add('hidden');
+            }
+        });
 
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
